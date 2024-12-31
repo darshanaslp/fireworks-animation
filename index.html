@@ -1,23 +1,24 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Happy New Year Fireworks</title>
+    <title>Happy New Year 2025 Fireworks</title>
     <style>
         body {
             background-color: #000;
             color: white;
             font-family: 'Arial', sans-serif;
             text-align: center;
-            margin-top: 100px;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
         }
 
-        #name {
+        #message {
             font-size: 40px;
             font-weight: bold;
-            margin-bottom: 20px;
+            margin-top: 150px;
         }
 
         #fireworks {
@@ -28,80 +29,134 @@
             left: 0;
             pointer-events: none;
         }
+
+        button {
+            position: absolute;
+            bottom: 50px;
+            padding: 10px 20px;
+            font-size: 20px;
+            background-color: #f39c12;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #e67e22;
+        }
     </style>
 </head>
 <body>
-    <div id="name"></div>
+
+    <div id="message">Happy New Year 2025! 🎉🎆</div>
     <canvas id="fireworks"></canvas>
+    <button id="fireworksButton">Trigger More Fireworks</button>
 
     <script>
-        // Function to start fireworks with user's name
-        function startFireworks(userName) {
-            const canvas = document.getElementById("fireworks");
-            const ctx = canvas.getContext("2d");
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-            document.getElementById("name").textContent = "Happy New Year, " + userName + "! 🎉";
+        // Set up the fireworks canvas
+        const canvas = document.getElementById("fireworks");
+        const ctx = canvas.getContext("2d");
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
 
-            const fireworks = [];
-
-            // Firework class to generate firework objects
-            class Firework {
-                constructor(x, y) {
-                    this.x = x;
-                    this.y = y;
-                    this.size = Math.random() * 3 + 1;
-                    this.speed = Math.random() * 3 + 2;
-                    this.angle = Math.random() * Math.PI * 2;
-                    this.life = 0;
-                    this.maxLife = Math.random() * 50 + 100;
-                    this.color = `hsl(${Math.random() * 360}, 100%, 50%)`;
-                }
-
-                update() {
-                    this.life++;
-                    if (this.life > this.maxLife) return false;
-
-                    this.x += this.speed * Math.cos(this.angle);
-                    this.y += this.speed * Math.sin(this.angle);
-                    this.speed *= 0.99;
-                    this.size *= 0.98;
-                    return true;
-                }
-
-                draw() {
-                    ctx.beginPath();
-                    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-                    ctx.fillStyle = this.color;
-                    ctx.fill();
-                }
-            }
-
-            // Create initial fireworks at random positions
-            setInterval(() => {
-                fireworks.push(new Firework(Math.random() * canvas.width, Math.random() * canvas.height));
-            }, 100);
-
-            // Animation loop
-            function animate() {
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                fireworks.forEach((firework, index) => {
-                    if (!firework.update()) {
-                        fireworks.splice(index, 1);
-                    } else {
-                        firework.draw();
-                    }
-                });
-                requestAnimationFrame(animate);
-            }
-
-            animate();
-        }
-
-        // Get user name from URL query parameter
+        // User's name from the URL query parameter
         const urlParams = new URLSearchParams(window.location.search);
         const userName = urlParams.get('name') || 'Friend';
-        startFireworks(userName);
+
+        // Firework particles class
+        class Firework {
+            constructor(x, y, angle, speed, size, color) {
+                this.x = x;
+                this.y = y;
+                this.angle = angle;
+                this.speed = speed;
+                this.size = size;
+                this.color = color;
+                this.life = 0;
+                this.maxLife = Math.random() * 50 + 100;
+                this.speedX = this.speed * Math.cos(this.angle);
+                this.speedY = this.speed * Math.sin(this.angle);
+            }
+
+            // Update the firework's position and size
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+                this.size *= 0.98;  // Shrinking effect
+                this.life++;
+
+                // Fade out and die after maxLife
+                if (this.life > this.maxLife) return false;
+                return true;
+            }
+
+            // Draw the firework
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fillStyle = this.color;
+                ctx.fill();
+            }
+        }
+
+        // Store fireworks
+        const fireworks = [];
+
+        // Trigger fireworks on button click
+        document.getElementById("fireworksButton").addEventListener("click", () => {
+            triggerFireworks(userName);
+        });
+
+        // Function to trigger fireworks at random positions
+        function triggerFireworks(userName) {
+            // Show fireworks at the top
+            for (let i = 0; i < 10; i++) {
+                const angle = Math.random() * Math.PI * 2;
+                const speed = Math.random() * 3 + 3;
+                const size = Math.random() * 3 + 2;
+                const color = `hsl(${Math.random() * 360}, 100%, 50%)`;
+                fireworks.push(new Firework(window.innerWidth / 2, 100, angle, speed, size, color));
+            }
+
+            // Add fireworks with user's name effect
+            setTimeout(() => {
+                createNameFireworks(userName);
+            }, 500);  // Slight delay to let initial fireworks settle
+        }
+
+        // Create fireworks with the user's name
+        function createNameFireworks(userName) {
+            const angle = Math.random() * Math.PI * 2;
+            const speed = 5;
+            const color = 'white';
+            const size = 4;
+            const fireworksText = userName.split('').map(char => char.charCodeAt(0));
+            fireworksText.forEach((charCode, index) => {
+                const x = window.innerWidth / 2 + (index - userName.length / 2) * 30;
+                const y = window.innerHeight / 3;
+                fireworks.push(new Firework(x, y, angle + index * 0.2, speed, size, color));
+            });
+        }
+
+        // Main animation loop
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Update and draw all fireworks
+            fireworks.forEach((firework, index) => {
+                if (!firework.update()) {
+                    fireworks.splice(index, 1); // Remove dead fireworks
+                } else {
+                    firework.draw();
+                }
+            });
+
+            requestAnimationFrame(animate);
+        }
+
+        animate();  // Start the animation
     </script>
 </body>
 </html>
